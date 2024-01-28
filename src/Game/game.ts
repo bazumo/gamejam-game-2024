@@ -35,6 +35,8 @@ function resolveObject<T>(
 
 const audioFiles = {
   clap: loadAudio("/music/clap.mp3"),
+  title_music: loadAudio("/music/Game Jam_1.mp3"),
+  game_music: loadAudio("/music/Game Jam_3.mp3"),
 };
 
 export const OFFSET_TOP_TARGET = 100;
@@ -172,6 +174,9 @@ export class Game {
     });
   }
 
+  // Music
+  private background_music: AudioBufferSourceNode | null = null;
+
   async init() {
     // Load all sounds and add them to the gameContext
     const sounds = await loadMusic();
@@ -197,6 +202,10 @@ export class Game {
   resume() {
     this._stop = false;
     this.last_timestamp = performance.now();
+    this.playBackground(
+      this.gameContext.audio_ctx,
+      this.gameContext.sound.game_music
+    );
     requestAnimationFrame(() => this.loop());
   }
 
@@ -226,6 +235,17 @@ export class Game {
     for (const gameObject of this.gameContext.game_objects) {
       gameObject.tick(this.gameContext);
     }
+  }
+
+  playBackground(audio_ctx: AudioContext, buffer: AudioBuffer) {
+    try {
+      this.background_music?.stop();
+    } catch (e) {}
+    this.background_music = audio_ctx.createBufferSource();
+    this.background_music.buffer = buffer;
+    this.background_music.connect(audio_ctx.destination);
+    this.background_music.loop = true;
+    this.background_music.start();
   }
 
   drawGameObjects() {
