@@ -103,7 +103,7 @@ const imageFiles = {
   cat_button_success: loadImage("/sprite/button/button cat4.png"),
   fuchs_button_success: loadImage("/sprite/button/button duck4.png"),
 
-  cat_bg: loadImage("/sprite/background/cat bg 0.png"),
+  cat_bg: loadImage("/sprite/background/cat bg 1.png"),
   fuchs_bg_0: loadImage("/sprite/background/fuch bg 0.png"),
   fuchs_bg_1: loadImage("/sprite/background/fuch bg 1.png"),
 } as Record<string, Promise<HTMLImageElement>>;
@@ -138,7 +138,7 @@ export class Game {
   private gameContext: GameContext = {
     theme: "cat",
     game_objects: [],
-    debug: false,
+    debug: true,
     missed_note_count: 0,
     t: 0,
     sound: {},
@@ -152,6 +152,8 @@ export class Game {
 
   // Drawing
   private canvas: HTMLCanvasElement | null = null;
+
+  public screenChangeFunction: (screen: string) => void = () => {};
 
   constructor() {
     this.last_timestamp = performance.now();
@@ -247,6 +249,10 @@ export class Game {
     }
   }
 
+  isLose() {
+    return this.gameContext.missed_note_count >= 3;
+  }
+
   loop() {
     // update the gametime
     this.updateGameTime();
@@ -273,6 +279,16 @@ export class Game {
 
     this.gameContext.input.usedSpcae = false;
     this.gameContext.input.pressedSpace = false;
+
+    if (this.isLose()) {
+      this.reset();
+      this.screenChangeFunction("lose");
+      this._stop = true;
+    }
+
+    if (this.gameContext.t > 24000) {
+      this.screenChangeFunction("win");
+    }
 
     // stop if needed
     if (this._stop) {

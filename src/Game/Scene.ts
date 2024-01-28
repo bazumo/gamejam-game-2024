@@ -12,12 +12,12 @@ import {
 interface Frame {
   start: number;
   end?: number;
-  image: string;
+  images: string[];
 }
 
 const TARGET_LENGTH = 2000;
 
-function genFrameAccount(sprite_id: string, frame_num: number) {
+function genFramesCat(sprite_id: string, frame_num: number) {
   const frame_len = TARGET_LENGTH / frame_num;
   return Array(frame_num)
     .fill(0)
@@ -25,16 +25,22 @@ function genFrameAccount(sprite_id: string, frame_num: number) {
       return {
         start: index * frame_len,
         end: index * frame_len + frame_len,
-        image: `${sprite_id}_${index}`,
+        images: [`${sprite_id}_${index}`],
       };
     });
 }
 
 const frames = {
-  cat_1: genFrameAccount("cat_1", CAT_1_FRAME_NUM),
-  cat_2: genFrameAccount("cat_2", CAT_2_FRAME_NUM),
-  cat_3: genFrameAccount("cat_3", CAT_3_FRAME_NUM),
+  cat_1: genFramesCat("cat_1", CAT_1_FRAME_NUM),
+  cat_2: genFramesCat("cat_2", CAT_2_FRAME_NUM),
+  cat_3: genFramesCat("cat_3", CAT_3_FRAME_NUM),
+  fuchs_1: create_fox_frames(),
+  fuchs_2: create_fox_frames(false),
+  fuchs_3: create_fox_frames(false, false),
 } as Record<string, Frame[]>;
+
+// polish fox
+frames.fuchs_2[0].images = ["fuchs_2_0"];
 
 export class CatBackground extends GameObject {
   private frames: Frame[];
@@ -65,13 +71,15 @@ export class CatBackground extends GameObject {
 
     const current_background = this.getCurrentBackground(game_ctx);
     if (current_background) {
-      draw_ctx.drawImage(
-        game_ctx.images[current_background.image],
-        0,
-        0,
-        1920,
-        1080
-      );
+      for (let i = 0; i < current_background.images.length; i++) {
+        draw_ctx.drawImage(
+          game_ctx.images[current_background.images[i]],
+          0,
+          0,
+          1920,
+          1080
+        );
+      }
     }
   }
 }
@@ -82,33 +90,44 @@ function getRandomInt(min: number, max: number) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
-function create_fox_frames() {
+function create_fox_frames(
+  left_chicken: boolean = true,
+  right_chicken: boolean = true
+): Frame[] {
   const NUM_CHOICES = 15;
-  const NUM_FRAMES = 4;
+  const NUM_FRAMES = 8;
   return Array(NUM_FRAMES)
     .fill(0)
     .map((_, index) => {
       const choice_fox = getRandomInt(0, NUM_CHOICES);
       const choice_left = getRandomInt(0, NUM_CHOICES);
       const choice_right = getRandomInt(0, NUM_CHOICES);
-      return {
-        start: index * 500,
-        end: index * 500 + 500,
-        image: [
-          `fuchs1_${choice_fox}`,
-          `chicken_left_${choice_left}`,
-          `chicken_right_${choice_right}`,
-        ],
+      const frame = {
+        start: index * 250,
+        end: index * 250 + 250,
+        images: [`fuchs1_${choice_fox}`],
       };
+      if (left_chicken) {
+        frame.images.push(`chicken_left_${choice_left}`);
+      }
+      if (right_chicken) {
+        frame.images.push(`chicken_right_${choice_right}`);
+      }
+      return frame;
     });
 }
 
 export class FoxBackground extends GameObject {
-  private frames = create_fox_frames();
+  private frames: Frame[];
+  public length: number = 0;
 
-  public length = this.frames.reduce((acc, item) => {
-    return Math.max(acc, item.end || 0);
-  }, 0);
+  constructor(frames: Frame[]) {
+    super(0);
+    this.frames = frames;
+    this.length = this.frames.reduce((acc, item) => {
+      return Math.max(acc, item.end || 0);
+    }, 0);
+  }
 
   getCurrentBackground(game_ctx: GameContext) {
     const relativeTimeMs = this.relativeTimeMs(game_ctx);
@@ -127,8 +146,8 @@ export class FoxBackground extends GameObject {
 
     const current_background = this.getCurrentBackground(game_ctx);
     if (current_background) {
-      for (let i = 0; i < current_background.image.length; i++) {
-        const image = current_background.image[i];
+      for (let i = 0; i < current_background.images.length; i++) {
+        const image = current_background.images[i];
         draw_ctx.drawImage(game_ctx.images[image], 0, 0, 1920, 1080);
       }
     }
@@ -138,8 +157,6 @@ export class FoxBackground extends GameObject {
 export class Scene extends GameObject {
   private children: GameObject[] = [];
   private theme: string;
-
-  private state: "demo" | "test" = "demo";
 
   constructor(time: number, theme: string, children: GameObject[] = []) {
     super(time);
@@ -170,7 +187,10 @@ export class Scene extends GameObject {
 
   isActive(game_ctx: GameContext, offset: number = 0) {
     const relativeTimeMs = this.relativeTimeMs(game_ctx);
-    return relativeTimeMs >= 0 && relativeTimeMs <= this.getLength() + offset;
+    const is_active =
+      relativeTimeMs >= 0 && relativeTimeMs <= this.getLength() + offset;
+
+    return is_active;
   }
 
   draw_bg(draw_ctx: CanvasRenderingContext2D, game_ctx: GameContext) {
@@ -210,7 +230,7 @@ export class Scene extends GameObject {
       draw_ctx.drawImage(
         image,
         IMAGE_OFFSET_LEFT,
-        OFFSET_TOP_TARGET + (isTest ? 0 : 100),
+        OFFSET_TOP_TARGET + (isTest ? 0 : 140),
         image.width / 2,
         image.height / 2
       );
@@ -242,14 +262,14 @@ const cat_1_rythm = notes_to_rythm([
 ]);
 const cat_2_rythm = notes_to_rythm([
   HALF_NOTE,
-  EIGHT_NOTE,
-  EIGHT_NOTE,
-  EIGHT_NOTE,
-  EIGHT_NOTE,
+  EIGHTH_NOTE,
+  EIGHTH_NOTE,
+  EIGHTH_NOTE,
+  EIGHTH_NOTE,
 ]);
 const cat_3_rythm = notes_to_rythm([
   QUARTER_NOTE,
-  EIGHT_NOTE,
+  EIGHTH_NOTE,
   QUARTER_NOTE,
   QUARTER_NOTE,
   EIGHTH_NOTE,
@@ -262,11 +282,7 @@ const fuchs_1_rythm = notes_to_rythm([
   EIGHTH_NOTE,
 ]);
 
-const fuchs_2_rythm = notes_to_rythm([
-  HALF_NOTE,
-  QUARTER_NOTE,
-  QUARTER_NOTE,
-]);
+const fuchs_2_rythm = notes_to_rythm([HALF_NOTE, QUARTER_NOTE, QUARTER_NOTE]);
 
 const fuchs_3_rythm = notes_to_rythm([
   QUARTER_NOTE,
@@ -304,9 +320,9 @@ const backgrounds = {
   cat_1: new CatBackground(frames.cat_1),
   cat_2: new CatBackground(frames.cat_2),
   cat_3: new CatBackground(frames.cat_3),
-  fuchs_1: new FoxBackground(0),
-  fuchs_2: new FoxBackground(0),
-  fuchs_3: new FoxBackground(0),
+  fuchs_1: new FoxBackground(frames.fuchs_1),
+  fuchs_2: new FoxBackground(frames.fuchs_2),
+  fuchs_3: new FoxBackground(frames.fuchs_3),
 } as Record<string, CatBackground | FoxBackground>;
 
 function genScene(theme: string, stage: number) {
@@ -321,16 +337,16 @@ function genScene(theme: string, stage: number) {
   return scene;
 }
 
-export function generateScenes() {
-  const sceneCombos = [
-    genScene("cat", 1),
-    genScene("fuchs", 1),
-    genScene("cat", 2),
-    genScene("fuchs", 2),
-    genScene("cat", 3),
-    genScene("fuchs", 3),
-  ];
+const sceneCombos = [
+  genScene("cat", 1),
+  genScene("fuchs", 1),
+  genScene("cat", 2),
+  genScene("fuchs", 2),
+  genScene("cat", 3),
+  genScene("fuchs", 3),
+];
 
+export function generateScenes() {
   const scenes: Scene[] = [];
   let time = 0;
   sceneCombos.forEach((item) => {

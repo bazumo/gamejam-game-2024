@@ -66,7 +66,7 @@ export class Clap extends GameObject {
     const INNER_LENGTH = MAX_LEN - 2 * MARGIN;
 
     const IMAGE_OFFSET_LEFT =
-      MARGIN + (INNER_LENGTH / 2000) * (this.delay % 2000);
+      MARGIN + (INNER_LENGTH / 2000) * (this.delay % 2001);
 
     const image = this.get_clap_image(game_ctx);
 
@@ -74,7 +74,7 @@ export class Clap extends GameObject {
       draw_ctx.drawImage(
         image,
         IMAGE_OFFSET_LEFT - image.width / 4,
-        OFFSET_TOP_TARGET + 100,
+        OFFSET_TOP_TARGET + 180 - image.height / 4,
         image.width / 2,
         image.height / 2
       );

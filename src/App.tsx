@@ -5,6 +5,8 @@ import "./App.css";
 
 function App() {
   const [loading, setLoading] = useState(true);
+  const [screen, setScreen] = useState("title");
+
   const gameRef = useRef<Game | null>(null);
   const canvasRef = useCallback((canvas: HTMLCanvasElement) => {
     if (!canvas) return;
@@ -18,6 +20,7 @@ function App() {
     setLoading(true);
     game.init().then(() => {
       setLoading(false);
+      game.screenChangeFunction = setScreen;
       gameRef.current = game;
     });
 
@@ -26,7 +29,11 @@ function App() {
     };
   }, []);
 
-  const [screen, setScreen] = useState("title");
+  useEffect(() => {
+    if (gameRef.current) {
+      gameRef.current.screenChangeFunction = setScreen;
+    }
+  }, [setScreen]);
 
   return (
     <>
@@ -112,11 +119,74 @@ function App() {
               src="/sprite/screen and button/credit button.png"
               alt="start"
               onClick={() => {
+                window.location.reload();
+              }}
+            ></img>
+          </div>
+        )}
+
+        {screen === "lose" && (
+          <div
+            style={{
+              position: "relative",
+            }}
+          >
+            <div
+              style={{
+                position: "absolute",
+                top: "0",
+                left: "0",
+              }}
+            >
+              <img src="/sprite/screen and button/you suck.png" alt="title" />
+            </div>
+            <img
+              style={{
+                position: "absolute",
+                top: "200px",
+                right: "100px",
+              }}
+              className="button"
+              src="/sprite/screen and button/credit button.png"
+              alt="start"
+              onClick={() => {
+                window.location.reload();
+              }}
+            ></img>
+          </div>
+        )}
+
+        {screen === "win" && (
+          <div
+            style={{
+              position: "relative",
+            }}
+          >
+            <div
+              style={{
+                position: "absolute",
+                top: "0",
+                left: "0",
+              }}
+            >
+              <img src="/sprite/screen and button/good job.png" alt="title" />
+            </div>
+            <img
+              style={{
+                position: "absolute",
+                top: "200px",
+                right: "100px",
+              }}
+              className="button"
+              src="/sprite/screen and button/credit button.png"
+              alt="start"
+              onClick={() => {
                 setScreen("title");
               }}
             ></img>
           </div>
         )}
+
         {screen === "game" && (
           <div>
             <p>{loading && "LOADING"}</p>

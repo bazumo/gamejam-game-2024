@@ -52,7 +52,7 @@ export class SoundEffect extends GameObject {
     if (this.clap_state === "missed") {
       return game_ctx.images[`${this.theme}_button_fail`];
     } else if (this.clap_state === "in_range_played") {
-      return game_ctx.images[`${this.theme}_button_success`];
+      return game_ctx.images[`${this.theme}_button_note`];
     }
     return game_ctx.images[`${this.theme}_button_note`];
   }
