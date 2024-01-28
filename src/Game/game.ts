@@ -1,5 +1,10 @@
 import { generateScenes } from "./Scene";
-import { GameContext } from "./types";
+import {
+  CAT_1_FRAME_NUM,
+  CAT_2_FRAME_NUM,
+  CAT_3_FRAME_NUM,
+  GameContext,
+} from "./types";
 
 /** AUDIO */
 const audioContext = new AudioContext();
@@ -52,39 +57,6 @@ const imageFiles = {
   fuchs1_14: loadImage("/sprite/fuch1/fuch14.png"),
   fuchs1_15: loadImage("/sprite/fuch1/fuch15.png"),
 
-  cathair_1_0: loadImage("/sprite/cat1/cathair0.png"),
-  cathair_1_1: loadImage("/sprite/cat1/cathair1.png"),
-  cathair_1_2: loadImage("/sprite/cat1/cathair2.png"),
-  cathair_1_3: loadImage("/sprite/cat1/cathair3.png"),
-  cathair_1_4: loadImage("/sprite/cat1/cathair4.png"),
-  cathair_1_5: loadImage("/sprite/cat1/cathair5.png"),
-  cathair_1_6: loadImage("/sprite/cat1/cathair6.png"),
-  cathair_1_7: loadImage("/sprite/cat1/cathair7.png"),
-  cathair_1_8: loadImage("/sprite/cat1/cathair8.png"),
-  cathair_1_9: loadImage("/sprite/cat1/cathair9.png"),
-  cathair_1_10: loadImage("/sprite/cat1/cathair10.png"),
-  cathair_1_11: loadImage("/sprite/cat1/cathair11.png"),
-  cathair_1_12: loadImage("/sprite/cat1/cathair12.png"),
-  cathair_1_13: loadImage("/sprite/cat1/cathair13.png"),
-  cathair_1_14: loadImage("/sprite/cat1/cathair14.png"),
-  cathair_1_15: loadImage("/sprite/cat1/cathair15.png"),
-  cathair_1_16: loadImage("/sprite/cat1/cathair16.png"),
-  cathair_1_17: loadImage("/sprite/cat1/cathair17.png"),
-  cathair_1_18: loadImage("/sprite/cat1/cathair18.png"),
-  cathair_1_19: loadImage("/sprite/cat1/cathair19.png"),
-  cathair_1_20: loadImage("/sprite/cat1/cathair20.png"),
-  cathair_1_21: loadImage("/sprite/cat1/cathair21.png"),
-  cathair_1_22: loadImage("/sprite/cat1/cathair22.png"),
-  cathair_1_23: loadImage("/sprite/cat1/cathair23.png"),
-  cathair_1_24: loadImage("/sprite/cat1/cathair24.png"),
-  cathair_1_25: loadImage("/sprite/cat1/cathair25.png"),
-  cathair_1_26: loadImage("/sprite/cat1/cathair26.png"),
-  cathair_1_27: loadImage("/sprite/cat1/cathair27.png"),
-  cathair_1_28: loadImage("/sprite/cat1/cathair28.png"),
-  cathair_1_29: loadImage("/sprite/cat1/cathair29.png"),
-  cathair_1_30: loadImage("/sprite/cat1/cathair30.png"),
-  cathair_1_31: loadImage("/sprite/cat1/cathair31.png"),
-
   chicken_left_0: loadImage("/sprite/chicken left/chicken left 0.png"),
   chicken_left_1: loadImage("/sprite/chicken left/chicken left 1.png"),
   chicken_left_2: loadImage("/sprite/chicken left/chicken left 2.png"),
@@ -120,21 +92,34 @@ const imageFiles = {
   chicken_right_15: loadImage("/sprite/chicken right/chicken right 15.png"),
 
   cat_button_outline: loadImage("/sprite/button/button cat2.png"),
-  duck_button_outline: loadImage("/sprite/button/button duck2.png"),
+  fuchs_button_outline: loadImage("/sprite/button/button duck2.png"),
 
   cat_button_fail: loadImage("/sprite/button/button cat3.png"),
-  duck_button_fail: loadImage("/sprite/button/button duck3.png"),
+  fuchs_button_fail: loadImage("/sprite/button/button duck3.png"),
 
   cat_button_note: loadImage("/sprite/button/button cat0.png"),
-  duck_button_note: loadImage("/sprite/button/button duck0.png"),
+  fuchs_button_note: loadImage("/sprite/button/button duck0.png"),
 
   cat_button_success: loadImage("/sprite/button/button cat4.png"),
-  duck_button_success: loadImage("/sprite/button/button duck4.png"),
+  fuchs_button_success: loadImage("/sprite/button/button duck4.png"),
 
   cat_bg: loadImage("/sprite/background/cat bg 0.png"),
   fuchs_bg_0: loadImage("/sprite/background/fuch bg 0.png"),
   fuchs_bg_1: loadImage("/sprite/background/fuch bg 1.png"),
-};
+} as Record<string, Promise<HTMLImageElement>>;
+
+/* Cat Frames */
+for (let i = 0; i < CAT_1_FRAME_NUM; i++) {
+  imageFiles[`cat_1_${i}`] = loadImage(`/sprite/cat1/cathair${i}.png`);
+}
+
+for (let i = 0; i < CAT_2_FRAME_NUM; i++) {
+  imageFiles[`cat_2_${i}`] = loadImage(`/sprite/cat2/cat${i}.png`);
+}
+
+for (let i = 0; i < CAT_3_FRAME_NUM; i++) {
+  imageFiles[`cat_3_${i}`] = loadImage(`/sprite/cat3/baldcat${i}.png`);
+}
 
 async function loadMusic() {
   return await resolveObject(audioFiles);
@@ -309,5 +294,7 @@ export class Game {
 }
 
 export function createNewGame() {
-  return new Game();
+  const game = new Game();
+  window.game = game;
+  return game;
 }

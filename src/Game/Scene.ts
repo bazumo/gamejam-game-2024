@@ -1,22 +1,51 @@
 import { Clap } from "./Clap";
 import { GameObject } from "./GameObject";
 import { SoundEffect } from "./SoundEffect";
-import { GameContext } from "./types";
+import {
+  CAT_1_FRAME_NUM,
+  CAT_2_FRAME_NUM,
+  CAT_3_FRAME_NUM,
+  GameContext,
+} from "./types";
 
-export class CatBackground extends GameObject {
-  private frames = Array(32)
+interface Frame {
+  start: number;
+  end?: number;
+  image: string;
+}
+
+const TARGET_LENGTH = 2000;
+
+function genFrameAccount(sprite_id: string, frame_num: number) {
+  const frame_len = TARGET_LENGTH / frame_num;
+  return Array(frame_num)
     .fill(0)
     .map((_, index) => {
       return {
-        start: index * 125,
-        end: index * 125 + 125,
-        image: `cathair_1_${index}`,
+        start: index * frame_len,
+        end: index * frame_len + frame_len,
+        image: `${sprite_id}_${index}`,
       };
     });
+}
 
-  public length = this.frames.reduce((acc, item) => {
-    return Math.max(acc, item.end || 0);
-  }, 0);
+const frames = {
+  cat_1: genFrameAccount("cat_1", CAT_1_FRAME_NUM),
+  cat_2: genFrameAccount("cat_2", CAT_2_FRAME_NUM),
+  cat_3: genFrameAccount("cat_3", CAT_3_FRAME_NUM),
+} as Record<string, Frame[]>;
+
+export class CatBackground extends GameObject {
+  private frames: Frame[];
+  public length: number = 0;
+
+  constructor(frames: Frame[]) {
+    super(0);
+    this.frames = frames;
+    this.length = this.frames.reduce((acc, item) => {
+      return Math.max(acc, item.end || 0);
+    }, 0);
+  }
 
   getCurrentBackground(game_ctx: GameContext) {
     const relativeTimeMs = this.relativeTimeMs(game_ctx);
@@ -202,46 +231,6 @@ const QUARTER_NOTE = 500;
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const HALF_NOTE = 1000;
 
-const cat_1_notes = [
-  QUARTER_NOTE,
-  QUARTER_NOTE,
-  QUARTER_NOTE,
-  QUARTER_NOTE, // Pattern 1, 4 quarter notes
-  EIGHTH_NOTE,
-  EIGHTH_NOTE,
-  EIGHTH_NOTE,
-  EIGHTH_NOTE,
-  QUARTER_NOTE,
-  QUARTER_NOTE, // Pattern 2, 4 quarter notes
-  /*QUARTER_NOTE,
-  QUARTER_NOTE,
-  QUARTER_NOTE,
-  QUARTER_NOTE, // Pattern 3, 4 quarter notes
-  EIGHTH_NOTE,
-  EIGHTH_NOTE,
-  QUARTER_NOTE,
-  QUARTER_NOTE,
-  EIGHTH_NOTE,
-  EIGHTH_NOTE, // Pattern 4, 4 quarter notes
-  HALF_NOTE,
-  QUARTER_NOTE,
-  QUARTER_NOTE, // Pattern 5, 4 quarter notes (half note used here)
-  QUARTER_NOTE,
-  EIGHTH_NOTE,
-  EIGHTH_NOTE,
-  EIGHTH_NOTE,
-  EIGHTH_NOTE,
-  QUARTER_NOTE, // Pattern 6, 4 quarter notes
-  QUARTER_NOTE,
-  EIGHTH_NOTE,
-  EIGHTH_NOTE,
-  QUARTER_NOTE,
-  QUARTER_NOTE, // Pattern 7, 4 quarter notes
-  QUARTER_NOTE,
-  QUARTER_NOTE,
-  HALF_NOTE, // Pattern 8, 4 quarter notes (half note used here)*/
-];
-
 const notes_to_rythm = (notes: number[]) => {
   let t = 0;
   return notes.map((note) => {
@@ -253,9 +242,23 @@ const notes_to_rythm = (notes: number[]) => {
   });
 };
 
-const cat_1_rythm = notes_to_rythm(cat_1_notes);
-
-const fuchs_1_1_rythm = notes_to_rythm([
+const cat_1_rythm = notes_to_rythm([
+  EIGHTH_NOTE,
+  EIGHTH_NOTE,
+  QUARTER_NOTE,
+  QUARTER_NOTE,
+  EIGHTH_NOTE,
+  EIGHTH_NOTE,
+]);
+const cat_2_rythm = notes_to_rythm([
+  EIGHTH_NOTE,
+  EIGHTH_NOTE,
+  QUARTER_NOTE,
+  QUARTER_NOTE,
+  EIGHTH_NOTE,
+  EIGHTH_NOTE,
+]);
+const cat_3_rythm = notes_to_rythm([
   EIGHTH_NOTE,
   EIGHTH_NOTE,
   QUARTER_NOTE,
@@ -264,7 +267,7 @@ const fuchs_1_1_rythm = notes_to_rythm([
   EIGHTH_NOTE,
 ]);
 
-const fuchs_1_2_rythm = notes_to_rythm([
+const fuchs_1_rythm = notes_to_rythm([
   EIGHTH_NOTE,
   EIGHTH_NOTE,
   QUARTER_NOTE,
@@ -273,7 +276,7 @@ const fuchs_1_2_rythm = notes_to_rythm([
   EIGHTH_NOTE,
 ]);
 
-const fuchs_1_3_rythm = notes_to_rythm([
+const fuchs_2_rythm = notes_to_rythm([
   EIGHTH_NOTE,
   EIGHTH_NOTE,
   QUARTER_NOTE,
@@ -281,11 +284,29 @@ const fuchs_1_3_rythm = notes_to_rythm([
   EIGHTH_NOTE,
   EIGHTH_NOTE,
 ]);
+
+const fuchs_3_rythm = notes_to_rythm([
+  EIGHTH_NOTE,
+  EIGHTH_NOTE,
+  QUARTER_NOTE,
+  QUARTER_NOTE,
+  EIGHTH_NOTE,
+  EIGHTH_NOTE,
+]);
+
+const rythms = {
+  cat_1: cat_1_rythm,
+  cat_2: cat_2_rythm,
+  cat_3: cat_3_rythm,
+  fuchs_1: fuchs_1_rythm,
+  fuchs_2: fuchs_2_rythm,
+  fuchs_3: fuchs_3_rythm,
+} as Record<string, typeof cat_1_rythm>;
 
 function rythm_to_gameObjects(
   rythm: typeof cat_1_rythm,
   theme: string,
-  isDemo: boolean = true
+  isDemo: boolean = false
 ) {
   if (isDemo) {
     return rythm.map((item) => {
@@ -300,48 +321,35 @@ function rythm_to_gameObjects(
   }
 }
 
+const backgrounds = {
+  cat_1: new CatBackground(frames.cat_1),
+  cat_2: new CatBackground(frames.cat_2),
+  cat_3: new CatBackground(frames.cat_3),
+  fuchs_1: new FoxBackground(0),
+  fuchs_2: new FoxBackground(0),
+  fuchs_3: new FoxBackground(0),
+} as Record<string, CatBackground | FoxBackground>;
+
+function genScene(theme: string, stage: number) {
+  const scene = {
+    theme,
+    children: [
+      backgrounds[`${theme}_${stage}`],
+      ...rythm_to_gameObjects(rythms[`${theme}_${stage}`], theme, false),
+    ],
+  };
+  console.log(scene);
+  return scene;
+}
+
 export function generateScenes() {
   const sceneCombos = [
-    {
-      rythm: cat_1_rythm,
-      theme: "cat",
-      children: [
-        new CatBackground(0),
-        ...rythm_to_gameObjects(cat_1_rythm, "cat", true),
-      ],
-    },
-    {
-      rythm: cat_1_rythm,
-      theme: "cat",
-      children: [
-        new CatBackground(0),
-        ...rythm_to_gameObjects(cat_1_rythm, "cat", false),
-      ],
-    },
-    {
-      rythm: fuchs_1_1_rythm,
-      theme: "duck",
-      children: [
-        new FoxBackground(0),
-        ...rythm_to_gameObjects(fuchs_1_1_rythm, "duck"),
-      ],
-    },
-    {
-      rythm: fuchs_1_2_rythm,
-      theme: "duck",
-      children: [
-        new FoxBackground(0),
-        ...rythm_to_gameObjects(fuchs_1_2_rythm, "duck"),
-      ],
-    },
-    {
-      rythm: fuchs_1_3_rythm,
-      theme: "duck",
-      children: [
-        new FoxBackground(0),
-        ...rythm_to_gameObjects(fuchs_1_3_rythm, "duck"),
-      ],
-    },
+    genScene("cat", 1),
+    genScene("fuchs", 1),
+    genScene("cat", 2),
+    genScene("fuchs", 2),
+    genScene("cat", 3),
+    genScene("fuchs", 3),
   ];
 
   const scenes: Scene[] = [];
