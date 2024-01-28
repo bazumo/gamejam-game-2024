@@ -27,3 +27,7 @@ export interface GameContext {
   input: InputState;
   audio_ctx: AudioContext;
 }
+
+export const CAT_1_FRAME_NUM = 32;
+export const CAT_2_FRAME_NUM = 25;
+export const CAT_3_FRAME_NUM = 36;

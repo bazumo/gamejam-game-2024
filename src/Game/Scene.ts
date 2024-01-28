@@ -1,30 +1,59 @@
 import { Clap } from "./Clap";
 import { GameObject } from "./GameObject";
 import { SoundEffect } from "./SoundEffect";
-import { GameContext } from "./types";
+import { OFFSET_TOP_TARGET } from "./game";
+import {
+  CAT_1_FRAME_NUM,
+  CAT_2_FRAME_NUM,
+  CAT_3_FRAME_NUM,
+  GameContext,
+} from "./types";
 
-export class CatBackground extends GameObject {
-  private frames = Array(32)
+interface Frame {
+  start: number;
+  end?: number;
+  image: string;
+}
+
+const TARGET_LENGTH = 2000;
+
+function genFrameAccount(sprite_id: string, frame_num: number) {
+  const frame_len = TARGET_LENGTH / frame_num;
+  return Array(frame_num)
     .fill(0)
     .map((_, index) => {
       return {
-        start: index * 125,
-        end: index * 125 + 125,
-        image: `cathair_1_${index}`,
+        start: index * frame_len,
+        end: index * frame_len + frame_len,
+        image: `${sprite_id}_${index}`,
       };
     });
+}
 
-  public length = this.frames.reduce((acc, item) => {
-    return Math.max(acc, item.end || 0);
-  }, 0);
+const frames = {
+  cat_1: genFrameAccount("cat_1", CAT_1_FRAME_NUM),
+  cat_2: genFrameAccount("cat_2", CAT_2_FRAME_NUM),
+  cat_3: genFrameAccount("cat_3", CAT_3_FRAME_NUM),
+} as Record<string, Frame[]>;
+
+export class CatBackground extends GameObject {
+  private frames: Frame[];
+  public length: number = 0;
+
+  constructor(frames: Frame[]) {
+    super(0);
+    this.frames = frames;
+    this.length = this.frames.reduce((acc, item) => {
+      return Math.max(acc, item.end || 0);
+    }, 0);
+  }
 
   getCurrentBackground(game_ctx: GameContext) {
     const relativeTimeMs = this.relativeTimeMs(game_ctx);
+    const t = relativeTimeMs % this.length;
+
     const current_background = this.frames.find((item) => {
-      return (
-        item.start <= relativeTimeMs &&
-        (!item.end || item.end >= relativeTimeMs)
-      );
+      return item.start <= t && (!item.end || item.end >= t);
     });
     return current_background;
   }
@@ -47,29 +76,35 @@ export class CatBackground extends GameObject {
   }
 }
 
+function getRandomInt(min: number, max: number) {
+  min = Math.ceil(min);
+  max = Math.floor(max);
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+function create_fox_frames() {
+  const NUM_CHOICES = 15;
+  const NUM_FRAMES = 4;
+  return Array(NUM_FRAMES)
+    .fill(0)
+    .map((_, index) => {
+      const choice_fox = getRandomInt(0, NUM_CHOICES);
+      const choice_left = getRandomInt(0, NUM_CHOICES);
+      const choice_right = getRandomInt(0, NUM_CHOICES);
+      return {
+        start: index * 500,
+        end: index * 500 + 500,
+        image: [
+          `fuchs1_${choice_fox}`,
+          `chicken_left_${choice_left}`,
+          `chicken_right_${choice_right}`,
+        ],
+      };
+    });
+}
+
 export class FoxBackground extends GameObject {
-  private frames = [
-    {
-      start: 0,
-      end: 500,
-      image: "fuchs1_1",
-    },
-    {
-      start: 500,
-      end: 1000,
-      image: "fuchs1_2",
-    },
-    {
-      start: 1000,
-      end: 1500,
-      image: "fuchs1_3",
-    },
-    {
-      start: 1500,
-      end: 2000,
-      image: "fuchs1_4",
-    },
-  ];
+  private frames = create_fox_frames();
 
   public length = this.frames.reduce((acc, item) => {
     return Math.max(acc, item.end || 0);
@@ -77,11 +112,10 @@ export class FoxBackground extends GameObject {
 
   getCurrentBackground(game_ctx: GameContext) {
     const relativeTimeMs = this.relativeTimeMs(game_ctx);
+    const t = relativeTimeMs % this.length;
+
     const current_background = this.frames.find((item) => {
-      return (
-        item.start <= relativeTimeMs &&
-        (!item.end || item.end >= relativeTimeMs)
-      );
+      return item.start <= t && (!item.end || item.end >= t);
     });
     return current_background;
   }
@@ -93,13 +127,10 @@ export class FoxBackground extends GameObject {
 
     const current_background = this.getCurrentBackground(game_ctx);
     if (current_background) {
-      draw_ctx.drawImage(
-        game_ctx.images[current_background.image],
-        0,
-        0,
-        1920,
-        1080
-      );
+      for (let i = 0; i < current_background.image.length; i++) {
+        const image = current_background.image[i];
+        draw_ctx.drawImage(game_ctx.images[image], 0, 0, 1920, 1080);
+      }
     }
   }
 }
@@ -107,6 +138,8 @@ export class FoxBackground extends GameObject {
 export class Scene extends GameObject {
   private children: GameObject[] = [];
   private theme: string;
+
+  private state: "demo" | "test" = "demo";
 
   constructor(time: number, theme: string, children: GameObject[] = []) {
     super(time);
@@ -131,10 +164,8 @@ export class Scene extends GameObject {
   }
 
   getLength() {
-    return this.children.reduce((acc, item) => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      return Math.max(acc, (item as any).length ?? 0);
-    }, 0);
+    // HACK, once demo once test
+    return TARGET_LENGTH * 2;
   }
 
   isActive(game_ctx: GameContext, offset: number = 0) {
@@ -143,16 +174,7 @@ export class Scene extends GameObject {
   }
 
   draw_bg(draw_ctx: CanvasRenderingContext2D, game_ctx: GameContext) {
-    if (!this.isActive(game_ctx)) {
-      this.children
-        .filter(
-          (child) => child instanceof Clap || child instanceof SoundEffect
-        )
-        .forEach((child) => {
-          child.draw_bg(draw_ctx, game_ctx);
-        });
-      return;
-    } else {
+    if (this.isActive(game_ctx)) {
       this.children.forEach((child) => {
         child.draw_bg(draw_ctx, game_ctx);
       });
@@ -160,16 +182,7 @@ export class Scene extends GameObject {
   }
 
   draw_middle(draw_ctx: CanvasRenderingContext2D, game_ctx: GameContext) {
-    if (!this.isActive(game_ctx)) {
-      this.children
-        .filter(
-          (child) => child instanceof Clap || child instanceof SoundEffect
-        )
-        .forEach((child) => {
-          child.draw_middle(draw_ctx, game_ctx);
-        });
-      return;
-    } else {
+    if (this.isActive(game_ctx)) {
       this.children.forEach((child) => {
         child.draw_middle(draw_ctx, game_ctx);
       });
@@ -177,19 +190,30 @@ export class Scene extends GameObject {
   }
 
   draw_front(draw_ctx: CanvasRenderingContext2D, game_ctx: GameContext) {
-    if (!this.isActive(game_ctx)) {
-      this.children
-        .filter(
-          (child) => child instanceof Clap || child instanceof SoundEffect
-        )
-        .forEach((child) => {
-          child.draw_front(draw_ctx, game_ctx);
-        });
-      return;
-    } else {
+    if (this.isActive(game_ctx)) {
       this.children.forEach((child) => {
         child.draw_front(draw_ctx, game_ctx);
       });
+
+      const t = this.relativeTimeMs(game_ctx);
+
+      const x = t % (this.getLength() / 2);
+      const isTest = Math.floor(t / (this.getLength() / 2)) % 2 === 0;
+
+      const MAX_LEN = 1920;
+      const MARGIN = 100;
+      const INNER_LENGTH = MAX_LEN - 2 * MARGIN;
+      const IMAGE_OFFSET_LEFT = MARGIN + (INNER_LENGTH / 2000) * x;
+
+      const image = game_ctx.images[`${this.theme}_button_outline`];
+
+      draw_ctx.drawImage(
+        image,
+        IMAGE_OFFSET_LEFT,
+        OFFSET_TOP_TARGET + (isTest ? 0 : 100),
+        image.width / 2,
+        image.height / 2
+      );
     }
   }
 }
@@ -198,46 +222,6 @@ const EIGHTH_NOTE = 250;
 const QUARTER_NOTE = 500;
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const HALF_NOTE = 1000;
-
-const cat_1_notes = [
-  QUARTER_NOTE,
-  QUARTER_NOTE,
-  QUARTER_NOTE,
-  QUARTER_NOTE, // Pattern 1, 4 quarter notes
-  EIGHTH_NOTE,
-  EIGHTH_NOTE,
-  EIGHTH_NOTE,
-  EIGHTH_NOTE,
-  QUARTER_NOTE,
-  QUARTER_NOTE, // Pattern 2, 4 quarter notes
-  /*QUARTER_NOTE,
-  QUARTER_NOTE,
-  QUARTER_NOTE,
-  QUARTER_NOTE, // Pattern 3, 4 quarter notes
-  EIGHTH_NOTE,
-  EIGHTH_NOTE,
-  QUARTER_NOTE,
-  QUARTER_NOTE,
-  EIGHTH_NOTE,
-  EIGHTH_NOTE, // Pattern 4, 4 quarter notes
-  HALF_NOTE,
-  QUARTER_NOTE,
-  QUARTER_NOTE, // Pattern 5, 4 quarter notes (half note used here)
-  QUARTER_NOTE,
-  EIGHTH_NOTE,
-  EIGHTH_NOTE,
-  EIGHTH_NOTE,
-  EIGHTH_NOTE,
-  QUARTER_NOTE, // Pattern 6, 4 quarter notes
-  QUARTER_NOTE,
-  EIGHTH_NOTE,
-  EIGHTH_NOTE,
-  QUARTER_NOTE,
-  QUARTER_NOTE, // Pattern 7, 4 quarter notes
-  QUARTER_NOTE,
-  QUARTER_NOTE,
-  HALF_NOTE, // Pattern 8, 4 quarter notes (half note used here)*/
-];
 
 const notes_to_rythm = (notes: number[]) => {
   let t = 0;
@@ -250,153 +234,101 @@ const notes_to_rythm = (notes: number[]) => {
   });
 };
 
-const cat_1_rythm = notes_to_rythm(cat_1_notes);
+const cat_1_rythm = notes_to_rythm([
+  EIGHTH_NOTE,
+  EIGHTH_NOTE,
+  QUARTER_NOTE,
+  HALF_NOTE,
+]);
+const cat_2_rythm = notes_to_rythm([
+  HALF_NOTE,
+  EIGHT_NOTE,
+  EIGHT_NOTE,
+  EIGHT_NOTE,
+  EIGHT_NOTE,
+]);
+const cat_3_rythm = notes_to_rythm([
+  QUARTER_NOTE,
+  EIGHT_NOTE,
+  QUARTER_NOTE,
+  QUARTER_NOTE,
+  EIGHTH_NOTE,
+]);
 
-const fuchs_1_1_rythm = [
-  {
-    time: 250,
+const fuchs_1_rythm = notes_to_rythm([
+  QUARTER_NOTE,
+  EIGHTH_NOTE,
+  HALF_NOTE,
+  EIGHTH_NOTE,
+]);
 
-    sound: "clap",
-  },
-  {
-    time: 750,
+const fuchs_2_rythm = notes_to_rythm([
+  HALF_NOTE,
+  QUARTER_NOTE,
+  QUARTER_NOTE,
+]);
 
-    sound: "clap",
-  },
-  {
-    time: 1000,
-    sound: "clap",
-  },
-  {
-    time: 1500,
-    sound: "clap",
-  },
-  {
-    time: 2000,
+const fuchs_3_rythm = notes_to_rythm([
+  QUARTER_NOTE,
+  QUARTER_NOTE,
+  EIGHTH_NOTE,
+  QUARTER_NOTE,
+  EIGHTH_NOTE,
+]);
 
-    sound: "clap",
-  },
-];
+const rythms = {
+  cat_1: cat_1_rythm,
+  cat_2: cat_2_rythm,
+  cat_3: cat_3_rythm,
+  fuchs_1: fuchs_1_rythm,
+  fuchs_2: fuchs_2_rythm,
+  fuchs_3: fuchs_3_rythm,
+} as Record<string, typeof cat_1_rythm>;
 
-const fuchs_1_2_rythm = [
-  {
-    time: 500,
-
-    sound: "clap",
-  },
-  {
-    time: 750,
-
-    sound: "clap",
-  },
-  {
-    time: 1000,
-
-    sound: "clap",
-  },
-  {
-    time: 1500,
-    sound: "clap",
-  },
-  {
-    time: 2000,
-
-    sound: "clap",
-  },
-];
-
-const fuchs_1_3_rythm = [
-  {
-    time: 250,
-
-    sound: "clap",
-  },
-  {
-    time: 750,
-
-    sound: "clap",
-  },
-  {
-    time: 1000,
-
-    sound: "clap",
-  },
-  {
-    time: 1250,
-
-    sound: "clap",
-  },
-  {
-    time: 1500,
-    sound: "clap",
-  },
-  {
-    time: 2000,
-
-    sound: "clap",
-  },
-];
-
-function rythm_to_gameObjects(
-  rythm: typeof cat_1_rythm,
-  theme: string,
-  isDemo: boolean = true
-) {
-  if (isDemo) {
-    return rythm.map((item) => {
+function rythm_to_gameObjects(rythm: typeof cat_1_rythm, theme: string) {
+  // HACK
+  const objs = [
+    ...rythm.map((item) => {
       // using the delay as a cheat
       return new SoundEffect(item.time, theme);
-    });
-  } else {
-    return rythm.map((item) => {
+    }),
+    ...rythm.map((item) => {
       // using the delay as a cheat
-      return new Clap(item.time, theme);
-    });
-  }
+      return new Clap(item.time + TARGET_LENGTH, theme);
+    }),
+  ];
+  return objs;
+}
+
+const backgrounds = {
+  cat_1: new CatBackground(frames.cat_1),
+  cat_2: new CatBackground(frames.cat_2),
+  cat_3: new CatBackground(frames.cat_3),
+  fuchs_1: new FoxBackground(0),
+  fuchs_2: new FoxBackground(0),
+  fuchs_3: new FoxBackground(0),
+} as Record<string, CatBackground | FoxBackground>;
+
+function genScene(theme: string, stage: number) {
+  const scene = {
+    theme,
+    children: [
+      backgrounds[`${theme}_${stage}`],
+      ...rythm_to_gameObjects(rythms[`${theme}_${stage}`], theme),
+    ],
+  };
+  console.log(scene);
+  return scene;
 }
 
 export function generateScenes() {
   const sceneCombos = [
-    {
-      rythm: cat_1_rythm,
-      theme: "cat",
-      children: [
-        new CatBackground(0),
-        ...rythm_to_gameObjects(cat_1_rythm, "cat", true),
-      ],
-    },
-    {
-      rythm: cat_1_rythm,
-      theme: "cat",
-      children: [
-        new CatBackground(0),
-        ...rythm_to_gameObjects(cat_1_rythm, "cat", false),
-      ],
-    },
-    {
-      rythm: fuchs_1_1_rythm,
-      theme: "duck",
-      children: [
-        new FoxBackground(0),
-        ...rythm_to_gameObjects(fuchs_1_1_rythm, "duck"),
-      ],
-    },
-    {
-      rythm: fuchs_1_2_rythm,
-      theme: "duck",
-      children: [
-        new FoxBackground(0),
-        ...rythm_to_gameObjects(fuchs_1_2_rythm, "duck"),
-      ],
-    },
-    {
-      rythm: fuchs_1_3_rythm,
-      theme: "duck",
-      children: [
-        new FoxBackground(0),
-        ...rythm_to_gameObjects(fuchs_1_3_rythm, "duck"),
-      ],
-    },
+    genScene("cat", 1),
+    genScene("fuchs", 1),
+    genScene("cat", 2),
+    genScene("fuchs", 2),
+    genScene("cat", 3),
+    genScene("fuchs", 3),
   ];
 
   const scenes: Scene[] = [];

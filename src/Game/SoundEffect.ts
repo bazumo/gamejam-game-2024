@@ -58,35 +58,20 @@ export class SoundEffect extends GameObject {
   }
 
   draw_front(draw_ctx: CanvasRenderingContext2D, game_ctx: GameContext) {
-    const offset_left = 800;
-    const { t } = game_ctx;
+    const MAX_LEN = 1920;
+    const MARGIN = 100;
+    const INNER_LENGTH = MAX_LEN - 2 * MARGIN;
+
+    const IMAGE_OFFSET_LEFT = MARGIN + (INNER_LENGTH / 2000) * this.delay;
 
     const image = this.get_clap_image(game_ctx);
 
-    const x = this.start_time + this.delay - t + offset_left;
-
     draw_ctx.drawImage(
       image,
-      x - image.width / 4,
+      IMAGE_OFFSET_LEFT - image.width / 4,
       OFFSET_TOP_TARGET,
       image.width / 2,
       image.height / 2
     );
-
-    if (game_ctx.debug) {
-      draw_ctx.fillStyle = "red";
-      draw_ctx.fillRect(
-        x - this.threshold,
-        OFFSET_TOP_TARGET,
-        2 * this.threshold,
-        10
-      );
-
-      draw_ctx.fillStyle = "green";
-      draw_ctx.fillRect(x, OFFSET_TOP_TARGET, 5, 10);
-    }
-
-    draw_ctx.fillStyle = "purple";
-    draw_ctx.fillRect(offset_left, OFFSET_TOP_TARGET, 2, 100);
   }
 }
