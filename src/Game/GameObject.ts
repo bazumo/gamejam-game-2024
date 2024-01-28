@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { GameContext } from "./types";
 
 export abstract class GameObject {
@@ -16,8 +17,10 @@ export abstract class GameObject {
 
   abstract tick(game_ctx: GameContext): void;
 
-  abstract draw(
+  draw_bg(draw_ctx: CanvasRenderingContext2D, game_ctx: GameContext): void {}
+  draw_middle(
     draw_ctx: CanvasRenderingContext2D,
     game_ctx: GameContext
-  ): void;
+  ): void {}
+  draw_front(draw_ctx: CanvasRenderingContext2D, game_ctx: GameContext): void {}
 }

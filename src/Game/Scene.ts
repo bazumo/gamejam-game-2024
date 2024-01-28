@@ -31,7 +31,9 @@ export class CatBackground extends GameObject {
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   tick(game_ctx: GameContext): void {}
-  draw(draw_ctx: CanvasRenderingContext2D, game_ctx: GameContext): void {
+  draw_bg(draw_ctx: CanvasRenderingContext2D, game_ctx: GameContext): void {
+    draw_ctx.drawImage(game_ctx.images["cat_bg"], 0, 0, 1920, 1080);
+
     const current_background = this.getCurrentBackground(game_ctx);
     if (current_background) {
       draw_ctx.drawImage(
@@ -86,7 +88,9 @@ export class FoxBackground extends GameObject {
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   tick(game_ctx: GameContext): void {}
-  draw(draw_ctx: CanvasRenderingContext2D, game_ctx: GameContext): void {
+  draw_bg(draw_ctx: CanvasRenderingContext2D, game_ctx: GameContext): void {
+    draw_ctx.drawImage(game_ctx.images["fuchs_bg_0"], 0, 0, 1920, 1080);
+
     const current_background = this.getCurrentBackground(game_ctx);
     if (current_background) {
       draw_ctx.drawImage(
@@ -117,7 +121,7 @@ export class Scene extends GameObject {
   }
 
   tick(game_ctx: GameContext) {
-    if (!this.isActive(game_ctx)) {
+    if (!this.isActive(game_ctx, 1000)) {
       return;
     }
     game_ctx.theme = this.theme;
@@ -133,15 +137,60 @@ export class Scene extends GameObject {
     }, 0);
   }
 
-  isActive(game_ctx: GameContext) {
+  isActive(game_ctx: GameContext, offset: number = 0) {
     const relativeTimeMs = this.relativeTimeMs(game_ctx);
-    return relativeTimeMs >= 0 && relativeTimeMs <= this.getLength() + 1000;
+    return relativeTimeMs >= 0 && relativeTimeMs <= this.getLength() + offset;
   }
 
-  draw(draw_ctx: CanvasRenderingContext2D, game_ctx: GameContext) {
-    this.children.forEach((child) => {
-      child.draw(draw_ctx, game_ctx);
-    });
+  draw_bg(draw_ctx: CanvasRenderingContext2D, game_ctx: GameContext) {
+    if (!this.isActive(game_ctx)) {
+      this.children
+        .filter(
+          (child) => child instanceof Clap || child instanceof SoundEffect
+        )
+        .forEach((child) => {
+          child.draw_bg(draw_ctx, game_ctx);
+        });
+      return;
+    } else {
+      this.children.forEach((child) => {
+        child.draw_bg(draw_ctx, game_ctx);
+      });
+    }
+  }
+
+  draw_middle(draw_ctx: CanvasRenderingContext2D, game_ctx: GameContext) {
+    if (!this.isActive(game_ctx)) {
+      this.children
+        .filter(
+          (child) => child instanceof Clap || child instanceof SoundEffect
+        )
+        .forEach((child) => {
+          child.draw_middle(draw_ctx, game_ctx);
+        });
+      return;
+    } else {
+      this.children.forEach((child) => {
+        child.draw_middle(draw_ctx, game_ctx);
+      });
+    }
+  }
+
+  draw_front(draw_ctx: CanvasRenderingContext2D, game_ctx: GameContext) {
+    if (!this.isActive(game_ctx)) {
+      this.children
+        .filter(
+          (child) => child instanceof Clap || child instanceof SoundEffect
+        )
+        .forEach((child) => {
+          child.draw_front(draw_ctx, game_ctx);
+        });
+      return;
+    } else {
+      this.children.forEach((child) => {
+        child.draw_front(draw_ctx, game_ctx);
+      });
+    }
   }
 }
 
@@ -291,7 +340,7 @@ const fuchs_1_3_rythm = [
 function rythm_to_gameObjects(
   rythm: typeof cat_1_rythm,
   theme: string,
-  isDemo: boolean = false
+  isDemo: boolean = true
 ) {
   if (isDemo) {
     return rythm.map((item) => {
@@ -313,7 +362,15 @@ export function generateScenes() {
       theme: "cat",
       children: [
         new CatBackground(0),
-        ...rythm_to_gameObjects(cat_1_rythm, "cat"),
+        ...rythm_to_gameObjects(cat_1_rythm, "cat", true),
+      ],
+    },
+    {
+      rythm: cat_1_rythm,
+      theme: "cat",
+      children: [
+        new CatBackground(0),
+        ...rythm_to_gameObjects(cat_1_rythm, "cat", false),
       ],
     },
     {

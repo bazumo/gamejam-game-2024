@@ -32,6 +32,8 @@ const audioFiles = {
   clap: loadAudio("/music/clap.mp3"),
 };
 
+export const OFFSET_TOP_TARGET = 100;
+
 const imageFiles = {
   fuchs1_0: loadImage("/sprite/fuch1/fuch0.png"),
   fuchs1_1: loadImage("/sprite/fuch1/fuch1.png"),
@@ -83,16 +85,21 @@ const imageFiles = {
   cathair_1_30: loadImage("/sprite/cat1/cathair30.png"),
   cathair_1_31: loadImage("/sprite/cat1/cathair31.png"),
 
-  cat_button_outline: loadImage("/sprite/button cat2.png"),
-  duck_button_outline: loadImage("/sprite/button duck2.png"),
+  cat_button_outline: loadImage("/sprite/button/button cat2.png"),
+  duck_button_outline: loadImage("/sprite/button/button duck2.png"),
 
-  cat_button_fail: loadImage("/sprite/button cat3.png"),
-  duck_button_fail: loadImage("/sprite/button duck3.png"),
+  cat_button_fail: loadImage("/sprite/button/button cat3.png"),
+  duck_button_fail: loadImage("/sprite/button/button duck3.png"),
 
-  cat_button_note: loadImage("/sprite/button cat0.png"),
-  duck_button_note: loadImage("/sprite/button duck0.png"),
+  cat_button_note: loadImage("/sprite/button/button cat0.png"),
+  duck_button_note: loadImage("/sprite/button/button duck0.png"),
 
-  cat_bg: loadImage("/sprite/background/cat bg.png"),
+  cat_button_success: loadImage("/sprite/button/button cat4.png"),
+  duck_button_success: loadImage("/sprite/button/button duck4.png"),
+
+  cat_bg: loadImage("/sprite/background/cat bg 0.png"),
+  fuchs_bg_0: loadImage("/sprite/background/fuch bg 0.png"),
+  fuchs_bg_1: loadImage("/sprite/background/fuch bg 1.png"),
 };
 
 async function loadMusic() {
@@ -195,10 +202,18 @@ export class Game {
   drawGameObjects() {
     const draw_ctx = this.canvas!.getContext("2d")!;
     for (const gameObject of this.gameContext.game_objects) {
-      gameObject.draw(draw_ctx, this.gameContext);
+      gameObject.draw_bg(draw_ctx, this.gameContext);
     }
 
-    // too lazy to do this properly
+    for (const gameObject of this.gameContext.game_objects) {
+      gameObject.draw_middle(draw_ctx, this.gameContext);
+    }
+
+    for (const gameObject of this.gameContext.game_objects) {
+      gameObject.draw_front(draw_ctx, this.gameContext);
+    }
+
+    // too lazy to do this properly, target
 
     const image =
       this.gameContext.images[`${this.gameContext.theme}_button_outline`];
@@ -206,7 +221,7 @@ export class Game {
     draw_ctx.drawImage(
       image,
       800 - image.width / 4,
-      0,
+      OFFSET_TOP_TARGET,
       image.width / 2,
       image.height / 2
     );

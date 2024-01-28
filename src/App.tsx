@@ -50,27 +50,22 @@ function App() {
                 left: "0",
               }}
             >
-              <img src="/sprite/title bild.png" alt="title" />
+              <img src="/sprite/screen and button/title bild.png" alt="title" />
             </div>
-            <div
+            <img
               style={{
                 position: "absolute",
-                top: "0",
-                left: "0",
-                width: "100%",
-                height: "100%",
-                display: "flex",
+                top: "200px",
+                right: "100px",
               }}
-            >
-              <button
-                onClick={() => {
-                  setScreen("game");
-                  gameRef.current?.resume();
-                }}
-              >
-                Start
-              </button>
-            </div>
+              className="button"
+              src="/sprite/screen and button/titlr play button.png"
+              alt="start"
+              onClick={() => {
+                setScreen("game");
+                gameRef.current?.resume();
+              }}
+            ></img>
           </div>
         )}
         {screen === "game" && (

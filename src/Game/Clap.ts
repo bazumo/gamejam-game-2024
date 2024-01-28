@@ -1,4 +1,5 @@
 import { GameObject } from "./GameObject";
+import { OFFSET_TOP_TARGET } from "./game";
 import { GameContext } from "./types";
 
 export class Clap extends GameObject {
@@ -50,34 +51,47 @@ export class Clap extends GameObject {
     }
   }
 
-  draw(draw_ctx: CanvasRenderingContext2D, game_ctx: GameContext) {
+  get_clap_image(game_ctx: GameContext) {
+    if (this.clap_state === "missed") {
+      return game_ctx.images[`${this.theme}_button_fail`];
+    } else if (this.clap_state === "in_range_played") {
+      return game_ctx.images[`${this.theme}_button_success`];
+    }
+    return game_ctx.images[`${this.theme}_button_note`];
+  }
+
+  draw_front(draw_ctx: CanvasRenderingContext2D, game_ctx: GameContext) {
     const offset_left = 800;
     const { t } = game_ctx;
 
-    const image =
-      "missed" === this.clap_state
-        ? game_ctx.images[`${this.theme}_button_fail`]
-        : game_ctx.images[`${this.theme}_button_note`];
+    const image = this.get_clap_image(game_ctx);
 
     const x = this.start_time + this.delay - t + offset_left;
 
-    draw_ctx.drawImage(
-      image,
-      x - image.width / 4,
-      0,
-      image.width / 2,
-      image.height / 2
-    );
+    if (this.clap_state === "in_range_played" || this.clap_state === "missed") {
+      draw_ctx.drawImage(
+        image,
+        x - image.width / 4,
+        OFFSET_TOP_TARGET,
+        image.width / 2,
+        image.height / 2
+      );
+    }
 
     if (game_ctx.debug) {
       draw_ctx.fillStyle = "red";
-      draw_ctx.fillRect(x - this.threshold, 0, 2 * this.threshold, 10);
+      draw_ctx.fillRect(
+        x - this.threshold,
+        OFFSET_TOP_TARGET,
+        2 * this.threshold,
+        10
+      );
 
       draw_ctx.fillStyle = "green";
-      draw_ctx.fillRect(x, 0, 5, 10);
+      draw_ctx.fillRect(x, OFFSET_TOP_TARGET, 5, 10);
     }
 
     draw_ctx.fillStyle = "purple";
-    draw_ctx.fillRect(offset_left, 0, 2, 100);
+    draw_ctx.fillRect(offset_left, OFFSET_TOP_TARGET, 2, 100);
   }
 }
