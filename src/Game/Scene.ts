@@ -35,13 +35,38 @@ const frames = {
   cat_2: genFramesCat("cat_2", CAT_2_FRAME_NUM),
   cat_3: genFramesCat("cat_3", CAT_3_FRAME_NUM),
   fuchs_1: create_fox_frames(),
-  fuchs_2: create_fox_frames(false),
-  fuchs_3: create_fox_frames(false, false),
+  fuchs_2: create_fox_frames(),
+  fuchs_3: create_fox_frames(false),
 } as Record<string, Frame[]>;
 
 // polish fox
-frames.fuchs_2[0].images = ["fuchs_2_0"];
 
+frames.fuchs_2[frames.fuchs_2.length - 1].images = [
+  "fuchs1_17",
+  "chicken_right_7",
+  "chicken_left_3",
+];
+frames.fuchs_2[frames.fuchs_2.length - 1].images = [
+  "fuchs1_16",
+  "chicken_right_16",
+  "chicken_left_13",
+];
+frames.fuchs_2[frames.fuchs_2.length - 1].images = [
+  "fuchs1_3",
+  "chicken_left_13",
+];
+
+frames.fuchs_3[frames.fuchs_2.length - 1].images = [
+  "fuchs1_19",
+  "chicken_left_3",
+];
+frames.fuchs_3[frames.fuchs_2.length - 1].images = [
+  "fuchs1_18",
+  "chicken_left_16",
+];
+frames.fuchs_3[frames.fuchs_2.length - 1].images = ["fuchs1_3"];
+
+console.log(frames);
 export class CatBackground extends GameObject {
   private frames: Frame[];
   public length: number = 0;
@@ -95,7 +120,8 @@ function create_fox_frames(
   right_chicken: boolean = true
 ): Frame[] {
   const NUM_CHOICES = 15;
-  const NUM_FRAMES = 8;
+  const NUM_FRAMES = 16;
+  const FRAME_LENGTH = 2000 / NUM_FRAMES;
   return Array(NUM_FRAMES)
     .fill(0)
     .map((_, index) => {
@@ -103,8 +129,8 @@ function create_fox_frames(
       const choice_left = getRandomInt(0, NUM_CHOICES);
       const choice_right = getRandomInt(0, NUM_CHOICES);
       const frame = {
-        start: index * 250,
-        end: index * 250 + 250,
+        start: index * FRAME_LENGTH,
+        end: index * FRAME_LENGTH + FRAME_LENGTH,
         images: [`fuchs1_${choice_fox}`],
       };
       if (left_chicken) {
@@ -142,7 +168,10 @@ export class FoxBackground extends GameObject {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   tick(game_ctx: GameContext): void {}
   draw_bg(draw_ctx: CanvasRenderingContext2D, game_ctx: GameContext): void {
-    draw_ctx.drawImage(game_ctx.images["fuchs_bg_0"], 0, 0, 1920, 1080);
+    const index =
+      Math.abs(Math.floor(this.relativeTimeMs(game_ctx) / this.frames.length)) %
+      2;
+    draw_ctx.drawImage(game_ctx.images[`fuchs_bg_${index}`], 0, 0, 1920, 1080);
 
     const current_background = this.getCurrentBackground(game_ctx);
     if (current_background) {

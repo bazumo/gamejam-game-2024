@@ -181,7 +181,7 @@ function App() {
               src="/sprite/screen and button/credit button.png"
               alt="start"
               onClick={() => {
-                setScreen("title");
+                window.location.reload();
               }}
             ></img>
           </div>

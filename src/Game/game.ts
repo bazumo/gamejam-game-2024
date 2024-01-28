@@ -63,9 +63,8 @@ const imageFiles = {
   fuchs1_17: loadImage("/sprite/fuch2/fuch right 2.png"),
   fuchs1_18: loadImage("/sprite/fuch2/fuch left 1.png"),
   fuchs1_19: loadImage("/sprite/fuch2/fuch left 2.png"),
-  chicken_right_16: loadImage("/sprite/chicken left/chicken death right.png"),
+  chicken_right_16: loadImage("/sprite/chicken right/chicken death right.png"),
   chicken_left_16: loadImage("/sprite/chicken left/chicken death left.png"),
-
 
   chicken_left_0: loadImage("/sprite/chicken left/chicken left 0.png"),
   chicken_left_1: loadImage("/sprite/chicken left/chicken left 1.png"),
