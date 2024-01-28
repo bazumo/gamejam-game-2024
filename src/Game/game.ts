@@ -35,6 +35,8 @@ function resolveObject<T>(
 
 const audioFiles = {
   clap: loadAudio("/music/clap.mp3"),
+  title_music: loadAudio("/music/Game Jam_1.mp3"),
+  game_music: loadAudio("/music/Game Jam_3.mp3"),
 };
 
 export const OFFSET_TOP_TARGET = 100;
@@ -61,9 +63,8 @@ const imageFiles = {
   fuchs1_17: loadImage("/sprite/fuch2/fuch right 2.png"),
   fuchs1_18: loadImage("/sprite/fuch2/fuch left 1.png"),
   fuchs1_19: loadImage("/sprite/fuch2/fuch left 2.png"),
-  chicken_right_16: loadImage("/sprite/chicken left/chicken death right.png"),
+  chicken_right_16: loadImage("/sprite/chicken right/chicken death right.png"),
   chicken_left_16: loadImage("/sprite/chicken left/chicken death left.png"),
-
 
   chicken_left_0: loadImage("/sprite/chicken left/chicken left 0.png"),
   chicken_left_1: loadImage("/sprite/chicken left/chicken left 1.png"),
@@ -146,7 +147,7 @@ export class Game {
   private gameContext: GameContext = {
     theme: "cat",
     game_objects: [],
-    debug: true,
+    debug: false,
     missed_note_count: 0,
     t: 0,
     sound: {},
@@ -171,6 +172,9 @@ export class Game {
       }
     });
   }
+
+  // Music
+  private background_music: AudioBufferSourceNode | null = null;
 
   async init() {
     // Load all sounds and add them to the gameContext
@@ -197,6 +201,10 @@ export class Game {
   resume() {
     this._stop = false;
     this.last_timestamp = performance.now();
+    this.playBackground(
+      this.gameContext.audio_ctx,
+      this.gameContext.sound.game_music
+    );
     requestAnimationFrame(() => this.loop());
   }
 
@@ -226,6 +234,17 @@ export class Game {
     for (const gameObject of this.gameContext.game_objects) {
       gameObject.tick(this.gameContext);
     }
+  }
+
+  playBackground(audio_ctx: AudioContext, buffer: AudioBuffer) {
+    try {
+      this.background_music?.stop();
+    } catch (e) {}
+    this.background_music = audio_ctx.createBufferSource();
+    this.background_music.buffer = buffer;
+    this.background_music.connect(audio_ctx.destination);
+    this.background_music.loop = true;
+    this.background_music.start();
   }
 
   drawGameObjects() {
@@ -308,6 +327,6 @@ export class Game {
 
 export function createNewGame() {
   const game = new Game();
-  window.game = game;
+  //window.game = game;
   return game;
 }

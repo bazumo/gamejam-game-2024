@@ -181,7 +181,7 @@ function App() {
               src="/sprite/screen and button/credit button.png"
               alt="start"
               onClick={() => {
-                setScreen("title");
+                window.location.reload();
               }}
             ></img>
           </div>
@@ -198,13 +198,7 @@ function App() {
                   height="1080"
                   ref={canvasRef}
                 ></canvas>
-                <div>
-                  <button onClick={() => gameRef.current?.pause()}>Stop</button>
-                  <button onClick={() => gameRef.current?.test()}>Test</button>
-                  <button onClick={() => gameRef.current?.reset()}>
-                    Reset
-                  </button>
-                </div>
+                <div></div>
               </div>
             )}
           </div>
