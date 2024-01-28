@@ -47,29 +47,35 @@ export class CatBackground extends GameObject {
   }
 }
 
+function getRandomInt(min: number, max: number) {
+  min = Math.ceil(min);
+  max = Math.floor(max);
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+function create_fox_frames() {
+  const NUM_CHOICES = 15;
+  const NUM_FRAMES = 4;
+  return Array(NUM_FRAMES)
+    .fill(0)
+    .map((_, index) => {
+      const choice_fox = getRandomInt(0, NUM_CHOICES);
+      const choice_left = getRandomInt(0, NUM_CHOICES);
+      const choice_right = getRandomInt(0, NUM_CHOICES);
+      return {
+        start: index * 500,
+        end: index * 500 + 500,
+        image: [
+          `fuchs1_${choice_fox}`,
+          `chicken_left_${choice_left}`,
+          `chicken_right_${choice_right}`,
+        ],
+      };
+    });
+}
+
 export class FoxBackground extends GameObject {
-  private frames = [
-    {
-      start: 0,
-      end: 500,
-      image: "fuchs1_1",
-    },
-    {
-      start: 500,
-      end: 1000,
-      image: "fuchs1_2",
-    },
-    {
-      start: 1000,
-      end: 1500,
-      image: "fuchs1_3",
-    },
-    {
-      start: 1500,
-      end: 2000,
-      image: "fuchs1_4",
-    },
-  ];
+  private frames = create_fox_frames();
 
   public length = this.frames.reduce((acc, item) => {
     return Math.max(acc, item.end || 0);
@@ -93,13 +99,10 @@ export class FoxBackground extends GameObject {
 
     const current_background = this.getCurrentBackground(game_ctx);
     if (current_background) {
-      draw_ctx.drawImage(
-        game_ctx.images[current_background.image],
-        0,
-        0,
-        1920,
-        1080
-      );
+      for (let i = 0; i < current_background.image.length; i++) {
+        const image = current_background.image[i];
+        draw_ctx.drawImage(game_ctx.images[image], 0, 0, 1920, 1080);
+      }
     }
   }
 }
@@ -252,90 +255,32 @@ const notes_to_rythm = (notes: number[]) => {
 
 const cat_1_rythm = notes_to_rythm(cat_1_notes);
 
-const fuchs_1_1_rythm = [
-  {
-    time: 250,
+const fuchs_1_1_rythm = notes_to_rythm([
+  EIGHTH_NOTE,
+  EIGHTH_NOTE,
+  QUARTER_NOTE,
+  QUARTER_NOTE,
+  EIGHTH_NOTE,
+  EIGHTH_NOTE,
+]);
 
-    sound: "clap",
-  },
-  {
-    time: 750,
+const fuchs_1_2_rythm = notes_to_rythm([
+  EIGHTH_NOTE,
+  EIGHTH_NOTE,
+  QUARTER_NOTE,
+  QUARTER_NOTE,
+  EIGHTH_NOTE,
+  EIGHTH_NOTE,
+]);
 
-    sound: "clap",
-  },
-  {
-    time: 1000,
-    sound: "clap",
-  },
-  {
-    time: 1500,
-    sound: "clap",
-  },
-  {
-    time: 2000,
-
-    sound: "clap",
-  },
-];
-
-const fuchs_1_2_rythm = [
-  {
-    time: 500,
-
-    sound: "clap",
-  },
-  {
-    time: 750,
-
-    sound: "clap",
-  },
-  {
-    time: 1000,
-
-    sound: "clap",
-  },
-  {
-    time: 1500,
-    sound: "clap",
-  },
-  {
-    time: 2000,
-
-    sound: "clap",
-  },
-];
-
-const fuchs_1_3_rythm = [
-  {
-    time: 250,
-
-    sound: "clap",
-  },
-  {
-    time: 750,
-
-    sound: "clap",
-  },
-  {
-    time: 1000,
-
-    sound: "clap",
-  },
-  {
-    time: 1250,
-
-    sound: "clap",
-  },
-  {
-    time: 1500,
-    sound: "clap",
-  },
-  {
-    time: 2000,
-
-    sound: "clap",
-  },
-];
+const fuchs_1_3_rythm = notes_to_rythm([
+  EIGHTH_NOTE,
+  EIGHTH_NOTE,
+  QUARTER_NOTE,
+  QUARTER_NOTE,
+  EIGHTH_NOTE,
+  EIGHTH_NOTE,
+]);
 
 function rythm_to_gameObjects(
   rythm: typeof cat_1_rythm,

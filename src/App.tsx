@@ -52,6 +52,7 @@ function App() {
             >
               <img src="/sprite/screen and button/title bild.png" alt="title" />
             </div>
+
             <img
               style={{
                 position: "absolute",
@@ -64,6 +65,54 @@ function App() {
               onClick={() => {
                 setScreen("game");
                 gameRef.current?.resume();
+              }}
+            ></img>
+
+            <img
+              style={{
+                position: "absolute",
+                top: "100px",
+                left: "100px",
+              }}
+              className="button"
+              src="/sprite/screen and button/titlr credit button.png"
+              alt="start"
+              onClick={() => {
+                setScreen("credits");
+              }}
+            ></img>
+          </div>
+        )}
+
+        {screen === "credits" && (
+          <div
+            style={{
+              position: "relative",
+            }}
+          >
+            <div
+              style={{
+                position: "absolute",
+                top: "0",
+                left: "0",
+              }}
+            >
+              <img
+                src="/sprite/screen and button/credit bild.png"
+                alt="title"
+              />
+            </div>
+            <img
+              style={{
+                position: "absolute",
+                top: "200px",
+                right: "100px",
+              }}
+              className="button"
+              src="/sprite/screen and button/credit button.png"
+              alt="start"
+              onClick={() => {
+                setScreen("title");
               }}
             ></img>
           </div>
