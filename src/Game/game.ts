@@ -147,7 +147,7 @@ export class Game {
   private gameContext: GameContext = {
     theme: "cat",
     game_objects: [],
-    debug: true,
+    debug: false,
     missed_note_count: 0,
     t: 0,
     sound: {},
@@ -327,6 +327,6 @@ export class Game {
 
 export function createNewGame() {
   const game = new Game();
-  window.game = game;
+  //window.game = game;
   return game;
 }
