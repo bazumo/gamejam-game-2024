@@ -1,0 +1,8 @@
+  28.01.2024 16:48:17: Starting composition “heart bg”.
+
+  Output To: C:\Users\krist\gamejam-game-2024\public\trailer\trailer old.avi    28.01.2024 16:48:32: Finished composition “heart bg”.
+
+
+  Total Time Elapsed: 15 Seconds
+Log closed on 28.01.2024 at 16:48:32
+
