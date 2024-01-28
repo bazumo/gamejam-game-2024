@@ -239,50 +239,40 @@ const cat_1_rythm = notes_to_rythm([
   EIGHTH_NOTE,
   QUARTER_NOTE,
   HALF_NOTE,
-  HALF_NOTE,
-  EIGHTH_NOTE,
 ]);
 const cat_2_rythm = notes_to_rythm([
   HALF_NOTE,
-  QUARTER_NOTE,
-  QUARTER_NOTE,
-  QUARTER_NOTE,
-  EIGHTH_NOTE,
-  EIGHTH_NOTE,
+  EIGHT_NOTE,
+  EIGHT_NOTE,
+  EIGHT_NOTE,
+  EIGHT_NOTE,
 ]);
 const cat_3_rythm = notes_to_rythm([
-  EIGHTH_NOTE,
-  HALF_NOTE,
+  QUARTER_NOTE,
+  EIGHT_NOTE,
   QUARTER_NOTE,
   QUARTER_NOTE,
   EIGHTH_NOTE,
-  HALF_NOTE,
 ]);
 
 const fuchs_1_rythm = notes_to_rythm([
   QUARTER_NOTE,
   EIGHTH_NOTE,
   HALF_NOTE,
-  QUARTER_NOTE,
-  QUARTER_NOTE,
   EIGHTH_NOTE,
 ]);
 
 const fuchs_2_rythm = notes_to_rythm([
   HALF_NOTE,
-  HALF_NOTE,
   QUARTER_NOTE,
   QUARTER_NOTE,
-  QUARTER_NOTE,
-  EIGHTH_NOTE,
 ]);
 
 const fuchs_3_rythm = notes_to_rythm([
   QUARTER_NOTE,
-  EIGHTH_NOTE,
-  QUARTER_NOTE,
   QUARTER_NOTE,
   EIGHTH_NOTE,
+  QUARTER_NOTE,
   EIGHTH_NOTE,
 ]);
 
