@@ -26,24 +26,76 @@ function App() {
     };
   }, []);
 
+  const [screen, setScreen] = useState("title");
+
   return (
     <>
-      <p>{loading && "LOADING"}</p>
-      {gameRef.current && (
-        <div>
-          <canvas
-            id="canvas"
-            width="1920"
-            height="1080"
-            ref={canvasRef}
-          ></canvas>
-          <div>
-            <button onClick={() => gameRef.current?.resume()}>Start</button>
-            <button onClick={() => gameRef.current?.pause()}>Stop</button>
-            <button onClick={() => gameRef.current?.test()}>Test</button>
+      <div
+        style={{
+          width: "1920px",
+          height: "1080px",
+          margin: "auto auto",
+        }}
+      >
+        {screen === "title" && (
+          <div
+            style={{
+              position: "relative",
+            }}
+          >
+            <div
+              style={{
+                position: "absolute",
+                top: "0",
+                left: "0",
+              }}
+            >
+              <img src="/sprite/title bild.png" alt="title" />
+            </div>
+            <div
+              style={{
+                position: "absolute",
+                top: "0",
+                left: "0",
+                width: "100%",
+                height: "100%",
+                display: "flex",
+              }}
+            >
+              <button
+                onClick={() => {
+                  setScreen("game");
+                  gameRef.current?.resume();
+                }}
+              >
+                Start
+              </button>
+            </div>
           </div>
-        </div>
-      )}
+        )}
+        {screen === "game" && (
+          <div>
+            <p>{loading && "LOADING"}</p>
+            {gameRef.current && (
+              <div>
+                <canvas
+                  id="canvas"
+                  width="1920"
+                  height="1080"
+                  ref={canvasRef}
+                ></canvas>
+                <div>
+                  <button onClick={() => gameRef.current?.pause()}>Stop</button>
+                  <button onClick={() => gameRef.current?.test()}>Test</button>
+                  <button onClick={() => gameRef.current?.reset()}>
+                    Reset
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
     </>
   );
 }

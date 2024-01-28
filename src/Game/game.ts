@@ -33,12 +33,66 @@ const audioFiles = {
 };
 
 const imageFiles = {
+  fuchs1_0: loadImage("/sprite/fuch1/fuch0.png"),
   fuchs1_1: loadImage("/sprite/fuch1/fuch1.png"),
-  fuchs1_2: loadImage("/sprite/fuch1/fuch5.png"),
-  fuchs1_3: loadImage("/sprite/fuch1/fuch6.png"),
-  fuchs1_4: loadImage("/sprite/fuch1/fuch7.png"),
-  fuchs1_5: loadImage("/sprite/fuch1/fuch8.png"),
-  fuchs1_6: loadImage("/sprite/fuch1/fuch9.png"),
+  fuchs1_2: loadImage("/sprite/fuch1/fuch2.png"),
+  fuchs1_3: loadImage("/sprite/fuch1/fuch3.png"),
+  fuchs1_4: loadImage("/sprite/fuch1/fuch4.png"),
+  fuchs1_5: loadImage("/sprite/fuch1/fuch5.png"),
+  fuchs1_6: loadImage("/sprite/fuch1/fuch6.png"),
+  fuchs1_7: loadImage("/sprite/fuch1/fuch7.png"),
+  fuchs1_8: loadImage("/sprite/fuch1/fuch8.png"),
+  fuchs1_9: loadImage("/sprite/fuch1/fuch9.png"),
+  fuchs1_10: loadImage("/sprite/fuch1/fuch10.png"),
+  fuchs1_11: loadImage("/sprite/fuch1/fuch11.png"),
+  fuchs1_12: loadImage("/sprite/fuch1/fuch12.png"),
+  fuchs1_13: loadImage("/sprite/fuch1/fuch13.png"),
+  fuchs1_14: loadImage("/sprite/fuch1/fuch14.png"),
+  fuchs1_15: loadImage("/sprite/fuch1/fuch15.png"),
+
+  cathair_1_0: loadImage("/sprite/cat1/cathair0.png"),
+  cathair_1_1: loadImage("/sprite/cat1/cathair1.png"),
+  cathair_1_2: loadImage("/sprite/cat1/cathair2.png"),
+  cathair_1_3: loadImage("/sprite/cat1/cathair3.png"),
+  cathair_1_4: loadImage("/sprite/cat1/cathair4.png"),
+  cathair_1_5: loadImage("/sprite/cat1/cathair5.png"),
+  cathair_1_6: loadImage("/sprite/cat1/cathair6.png"),
+  cathair_1_7: loadImage("/sprite/cat1/cathair7.png"),
+  cathair_1_8: loadImage("/sprite/cat1/cathair8.png"),
+  cathair_1_9: loadImage("/sprite/cat1/cathair9.png"),
+  cathair_1_10: loadImage("/sprite/cat1/cathair10.png"),
+  cathair_1_11: loadImage("/sprite/cat1/cathair11.png"),
+  cathair_1_12: loadImage("/sprite/cat1/cathair12.png"),
+  cathair_1_13: loadImage("/sprite/cat1/cathair13.png"),
+  cathair_1_14: loadImage("/sprite/cat1/cathair14.png"),
+  cathair_1_15: loadImage("/sprite/cat1/cathair15.png"),
+  cathair_1_16: loadImage("/sprite/cat1/cathair16.png"),
+  cathair_1_17: loadImage("/sprite/cat1/cathair17.png"),
+  cathair_1_18: loadImage("/sprite/cat1/cathair18.png"),
+  cathair_1_19: loadImage("/sprite/cat1/cathair19.png"),
+  cathair_1_20: loadImage("/sprite/cat1/cathair20.png"),
+  cathair_1_21: loadImage("/sprite/cat1/cathair21.png"),
+  cathair_1_22: loadImage("/sprite/cat1/cathair22.png"),
+  cathair_1_23: loadImage("/sprite/cat1/cathair23.png"),
+  cathair_1_24: loadImage("/sprite/cat1/cathair24.png"),
+  cathair_1_25: loadImage("/sprite/cat1/cathair25.png"),
+  cathair_1_26: loadImage("/sprite/cat1/cathair26.png"),
+  cathair_1_27: loadImage("/sprite/cat1/cathair27.png"),
+  cathair_1_28: loadImage("/sprite/cat1/cathair28.png"),
+  cathair_1_29: loadImage("/sprite/cat1/cathair29.png"),
+  cathair_1_30: loadImage("/sprite/cat1/cathair30.png"),
+  cathair_1_31: loadImage("/sprite/cat1/cathair31.png"),
+
+  cat_button_outline: loadImage("/sprite/button cat2.png"),
+  duck_button_outline: loadImage("/sprite/button duck2.png"),
+
+  cat_button_fail: loadImage("/sprite/button cat3.png"),
+  duck_button_fail: loadImage("/sprite/button duck3.png"),
+
+  cat_button_note: loadImage("/sprite/button cat0.png"),
+  duck_button_note: loadImage("/sprite/button duck0.png"),
+
+  cat_bg: loadImage("/sprite/background/cat bg.png"),
 };
 
 async function loadMusic() {
@@ -56,9 +110,10 @@ export class Game {
 
   // gameContext
   private gameContext: GameContext = {
+    theme: "cat",
     game_objects: [],
     debug: true,
-    missed_note: false,
+    missed_note_count: 0,
     t: 0,
     sound: {},
     images: {},
@@ -115,7 +170,7 @@ export class Game {
 
   reset() {
     this.gameContext.t = 0;
-    this.gameContext.missed_note = false;
+    this.gameContext.missed_note_count = 0;
     this.gameContext.input.pressedSpace = false;
     this.gameContext.input.usedSpcae = false;
   }
@@ -129,7 +184,6 @@ export class Game {
     const delta = now - this.last_timestamp;
     this.last_timestamp = now;
     this.gameContext.t += delta;
-    console.log("gameTime", this.gameContext.t);
   }
 
   processGameObjects() {
@@ -139,20 +193,38 @@ export class Game {
   }
 
   drawGameObjects() {
+    const draw_ctx = this.canvas!.getContext("2d")!;
     for (const gameObject of this.gameContext.game_objects) {
-      gameObject.draw(this.canvas!.getContext("2d")!, this.gameContext);
+      gameObject.draw(draw_ctx, this.gameContext);
     }
+
+    // too lazy to do this properly
+
+    const image =
+      this.gameContext.images[`${this.gameContext.theme}_button_outline`];
+
+    draw_ctx.drawImage(
+      image,
+      800 - image.width / 4,
+      0,
+      image.width / 2,
+      image.height / 2
+    );
+
     // debug
     if (this.gameContext.debug) {
       const ctx = this.canvas!.getContext("2d")!;
       ctx.font = "16px Arial";
       ctx.fillText(`t: ${this.gameContext.t}`, 10, 1000);
+      ctx.fillText(
+        `missedNoteCount: ${this.gameContext.missed_note_count}`,
+        10,
+        950
+      );
     }
   }
 
   loop() {
-    console.log("tick");
-
     // update the gametime
     this.updateGameTime();
 
@@ -173,7 +245,7 @@ export class Game {
       !this.gameContext.input.usedSpcae &&
       this.gameContext.input.pressedSpace
     ) {
-      this.gameContext.missed_note = true;
+      this.gameContext.missed_note_count += 1;
     }
 
     this.gameContext.input.usedSpcae = false;

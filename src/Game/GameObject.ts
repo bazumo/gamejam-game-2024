@@ -6,6 +6,10 @@ export abstract class GameObject {
     this.start_time = start_time;
   }
 
+  set_start_time(start_time: number) {
+    this.start_time = start_time;
+  }
+
   relativeTimeMs(game_ctx: GameContext): number {
     return game_ctx.t - this.start_time;
   }

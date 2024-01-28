@@ -8,13 +8,16 @@ export class Clap extends GameObject {
     | "in_range_played"
     | "missed" = "idle";
 
-  private clap_time: number = 0;
+  private delay: number = 0;
   private threshold: number = 100;
 
-  constructor(clap_time: number, threshold: number = 100) {
-    super(clap_time);
-    this.clap_time = clap_time;
+  private theme: string = "cat";
+
+  constructor(delay: number, theme: string, threshold: number = 100) {
+    super(0);
+    this.delay = delay;
     this.threshold = threshold;
+    this.theme = theme;
   }
 
   playSound(audio_ctx: AudioContext, buffer: AudioBuffer) {
@@ -28,39 +31,53 @@ export class Clap extends GameObject {
     const { t, audio_ctx } = game_ctx;
 
     if (this.clap_state === "idle") {
-      if (t > this.clap_time - this.threshold) {
+      if (t > this.start_time + this.delay - this.threshold) {
         this.clap_state = "in_range_not_played";
       }
     } else if (this.clap_state === "in_range_not_played") {
-      if (t < this.clap_time + this.threshold && game_ctx.input.pressedSpace) {
+      if (
+        t < this.start_time + this.delay + this.threshold &&
+        game_ctx.input.pressedSpace
+      ) {
         this.clap_state = "in_range_played";
         game_ctx.input.usedSpcae = true;
         this.playSound(audio_ctx, game_ctx.sound.clap);
       }
-      if (t > this.clap_time + this.threshold) {
+      if (t > this.start_time + this.delay + this.threshold) {
         this.clap_state = "missed";
-        game_ctx.missed_note = true;
+        game_ctx.missed_note_count += 1;
       }
     }
   }
 
   draw(draw_ctx: CanvasRenderingContext2D, game_ctx: GameContext) {
-    const offset_left = 200;
+    const offset_left = 800;
     const { t } = game_ctx;
-    if (game_ctx.debug) {
-      const x = this.clap_time - t + offset_left;
 
+    const image =
+      "missed" === this.clap_state
+        ? game_ctx.images[`${this.theme}_button_fail`]
+        : game_ctx.images[`${this.theme}_button_note`];
+
+    const x = this.start_time + this.delay - t + offset_left;
+
+    draw_ctx.drawImage(
+      image,
+      x - image.width / 4,
+      0,
+      image.width / 2,
+      image.height / 2
+    );
+
+    if (game_ctx.debug) {
       draw_ctx.fillStyle = "red";
-      draw_ctx.fillRect(x - this.threshold, 0, 2 * this.threshold, 100);
+      draw_ctx.fillRect(x - this.threshold, 0, 2 * this.threshold, 10);
 
       draw_ctx.fillStyle = "green";
-      draw_ctx.fillRect(x, 0, 5, 100);
-
-      draw_ctx.fillStyle = "black";
-      draw_ctx.fillText(this.clap_state, x, 100);
-
-      draw_ctx.fillStyle = "purple";
-      draw_ctx.fillRect(offset_left, 0, 2, 100);
+      draw_ctx.fillRect(x, 0, 5, 10);
     }
+
+    draw_ctx.fillStyle = "purple";
+    draw_ctx.fillRect(offset_left, 0, 2, 100);
   }
 }
