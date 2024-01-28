@@ -234,17 +234,6 @@ export class Game {
 
     // too lazy to do this properly, target
 
-    const image =
-      this.gameContext.images[`${this.gameContext.theme}_button_outline`];
-
-    draw_ctx.drawImage(
-      image,
-      800 - image.width / 4,
-      OFFSET_TOP_TARGET,
-      image.width / 2,
-      image.height / 2
-    );
-
     // debug
     if (this.gameContext.debug) {
       const ctx = this.canvas!.getContext("2d")!;

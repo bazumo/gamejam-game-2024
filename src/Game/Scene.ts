@@ -1,6 +1,7 @@
 import { Clap } from "./Clap";
 import { GameObject } from "./GameObject";
 import { SoundEffect } from "./SoundEffect";
+import { OFFSET_TOP_TARGET } from "./game";
 import {
   CAT_1_FRAME_NUM,
   CAT_2_FRAME_NUM,
@@ -49,11 +50,10 @@ export class CatBackground extends GameObject {
 
   getCurrentBackground(game_ctx: GameContext) {
     const relativeTimeMs = this.relativeTimeMs(game_ctx);
+    const t = relativeTimeMs % this.length;
+
     const current_background = this.frames.find((item) => {
-      return (
-        item.start <= relativeTimeMs &&
-        (!item.end || item.end >= relativeTimeMs)
-      );
+      return item.start <= t && (!item.end || item.end >= t);
     });
     return current_background;
   }
@@ -112,11 +112,10 @@ export class FoxBackground extends GameObject {
 
   getCurrentBackground(game_ctx: GameContext) {
     const relativeTimeMs = this.relativeTimeMs(game_ctx);
+    const t = relativeTimeMs % this.length;
+
     const current_background = this.frames.find((item) => {
-      return (
-        item.start <= relativeTimeMs &&
-        (!item.end || item.end >= relativeTimeMs)
-      );
+      return item.start <= t && (!item.end || item.end >= t);
     });
     return current_background;
   }
@@ -139,6 +138,8 @@ export class FoxBackground extends GameObject {
 export class Scene extends GameObject {
   private children: GameObject[] = [];
   private theme: string;
+
+  private state: "demo" | "test" = "demo";
 
   constructor(time: number, theme: string, children: GameObject[] = []) {
     super(time);
@@ -163,10 +164,8 @@ export class Scene extends GameObject {
   }
 
   getLength() {
-    return this.children.reduce((acc, item) => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      return Math.max(acc, (item as any).length ?? 0);
-    }, 0);
+    // HACK, once demo once test
+    return TARGET_LENGTH * 2;
   }
 
   isActive(game_ctx: GameContext, offset: number = 0) {
@@ -175,16 +174,7 @@ export class Scene extends GameObject {
   }
 
   draw_bg(draw_ctx: CanvasRenderingContext2D, game_ctx: GameContext) {
-    if (!this.isActive(game_ctx)) {
-      this.children
-        .filter(
-          (child) => child instanceof Clap || child instanceof SoundEffect
-        )
-        .forEach((child) => {
-          child.draw_bg(draw_ctx, game_ctx);
-        });
-      return;
-    } else {
+    if (this.isActive(game_ctx)) {
       this.children.forEach((child) => {
         child.draw_bg(draw_ctx, game_ctx);
       });
@@ -192,16 +182,7 @@ export class Scene extends GameObject {
   }
 
   draw_middle(draw_ctx: CanvasRenderingContext2D, game_ctx: GameContext) {
-    if (!this.isActive(game_ctx)) {
-      this.children
-        .filter(
-          (child) => child instanceof Clap || child instanceof SoundEffect
-        )
-        .forEach((child) => {
-          child.draw_middle(draw_ctx, game_ctx);
-        });
-      return;
-    } else {
+    if (this.isActive(game_ctx)) {
       this.children.forEach((child) => {
         child.draw_middle(draw_ctx, game_ctx);
       });
@@ -209,19 +190,30 @@ export class Scene extends GameObject {
   }
 
   draw_front(draw_ctx: CanvasRenderingContext2D, game_ctx: GameContext) {
-    if (!this.isActive(game_ctx)) {
-      this.children
-        .filter(
-          (child) => child instanceof Clap || child instanceof SoundEffect
-        )
-        .forEach((child) => {
-          child.draw_front(draw_ctx, game_ctx);
-        });
-      return;
-    } else {
+    if (this.isActive(game_ctx)) {
       this.children.forEach((child) => {
         child.draw_front(draw_ctx, game_ctx);
       });
+
+      const t = this.relativeTimeMs(game_ctx);
+
+      const x = t % (this.getLength() / 2);
+      const isTest = Math.floor(t / (this.getLength() / 2)) % 2 === 0;
+
+      const MAX_LEN = 1920;
+      const MARGIN = 100;
+      const INNER_LENGTH = MAX_LEN - 2 * MARGIN;
+      const IMAGE_OFFSET_LEFT = MARGIN + (INNER_LENGTH / 2000) * x;
+
+      const image = game_ctx.images[`${this.theme}_button_outline`];
+
+      draw_ctx.drawImage(
+        image,
+        IMAGE_OFFSET_LEFT,
+        OFFSET_TOP_TARGET + (isTest ? 0 : 100),
+        image.width / 2,
+        image.height / 2
+      );
     }
   }
 }
@@ -303,22 +295,19 @@ const rythms = {
   fuchs_3: fuchs_3_rythm,
 } as Record<string, typeof cat_1_rythm>;
 
-function rythm_to_gameObjects(
-  rythm: typeof cat_1_rythm,
-  theme: string,
-  isDemo: boolean = false
-) {
-  if (isDemo) {
-    return rythm.map((item) => {
+function rythm_to_gameObjects(rythm: typeof cat_1_rythm, theme: string) {
+  // HACK
+  const objs = [
+    ...rythm.map((item) => {
       // using the delay as a cheat
       return new SoundEffect(item.time, theme);
-    });
-  } else {
-    return rythm.map((item) => {
+    }),
+    ...rythm.map((item) => {
       // using the delay as a cheat
-      return new Clap(item.time, theme);
-    });
-  }
+      return new Clap(item.time + TARGET_LENGTH, theme);
+    }),
+  ];
+  return objs;
 }
 
 const backgrounds = {
@@ -335,7 +324,7 @@ function genScene(theme: string, stage: number) {
     theme,
     children: [
       backgrounds[`${theme}_${stage}`],
-      ...rythm_to_gameObjects(rythms[`${theme}_${stage}`], theme, false),
+      ...rythm_to_gameObjects(rythms[`${theme}_${stage}`], theme),
     ],
   };
   console.log(scene);
